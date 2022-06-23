@@ -7,9 +7,9 @@
       <h3>
         <slot name="title" />
       </h3>
-      <div class="flex gap-2">
-        <button @click.stop="onDelete()">Delete</button>
-        <button @click.stop="onEdit()">Edit</button>
+      <div v-if="editable" class="flex gap-2">
+        <button @click.stop="onDelete">Delete</button>
+        <button @click.stop="onEdit">Edit</button>
         <span v-if="isOpen">-</span>
         <span v-else>+</span>
       </div>
@@ -17,38 +17,70 @@
     <Transition name="fadeHeight">
       <div class="bg-gray-300" v-if="isOpen">
         <p class="w-full">
-          <slot name="description" />
+          <slot />
         </p>
       </div>
     </Transition>
   </article>
 </template>
 
-<script>
-export default {
-  inject: ["setIndex", "reactiveIndex"],
-  name: "AccordionItem",
-  props: {
-    index: Number,
-    editable: Boolean,
-  },
-  methods: {
-    toggle() {
-      this.setIndex(this.index);
-    },
-    onDelete() {
-      this.$emit("delete", this.index);
-    },
-    onEdit() {
-      this.$emit("edit", this.index);
-    },
-  },
-  computed: {
-    isOpen: function () {
-      return this.reactiveIndex.currentItem === this.index;
-    },
-  },
-};
+<script lang="ts">
+import Vue from "vue";
+import Component from "vue-class-component";
+import { Emit, InjectReactive, Prop } from "vue-property-decorator";
+
+@Component
+export default class AccordionItem extends Vue {
+  // eslint-disable-next-line no-unused-vars
+  @InjectReactive() readonly setIndex!: (id: number) => void;
+  @InjectReactive() readonly reactiveIndex!: { currentItem: number };
+
+  @Prop({ default: 0 }) readonly index!: number;
+  @Prop(Boolean) readonly editable: boolean | undefined;
+
+  toggle() {
+    this.setIndex(this.index);
+  }
+
+  @Emit()
+  onDelete() {
+    return this.index;
+  }
+  @Emit()
+  onEdit() {
+    return this.index;
+  }
+
+  //computed
+  get isOpen() {
+    return this.reactiveIndex.currentItem === this.index;
+  }
+}
+
+// export default {
+//   inject: ["setIndex", "reactiveIndex"],
+//   name: "AccordionItem",
+//   props: {
+//     index: Number,
+//     editable: Boolean,
+//   },
+//   methods: {
+//     toggle() {
+//       this.setIndex(this.index);
+//     },
+//     onDelete() {
+//       this.$emit("delete", this.index);
+//     },
+//     onEdit() {
+//       this.$emit("edit", this.index);
+//     },
+//   },
+//   computed: {
+//     isOpen: function () {
+//       return this.reactiveIndex.currentItem === this.index;
+//     },
+//   },
+// };
 </script>
 
 <style>
